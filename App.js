@@ -3,7 +3,7 @@ import {
   numberTypeAnnotation,
   numericLiteral
 } from '@babel/types'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -13,22 +13,98 @@ import {
   Alert,
   ScrollView,
   TouchableHighlight,
-  StyleSheet
+  StyleSheet,
+  ActivityIndicator
 } from 'react-native'
 import { SwipeListView } from 'react-native-swipe-list-view'
 import Icon from 'react-native-vector-icons/FontAwesome'
+import axios from 'axios'
+
+const url = 'https://weight-checker-maria.herokuapp.com'
 
 const App = () => {
   const [text, setText] = useState('')
   const [weights, setWeights] = useState([])
+  const [hello, setHello] = useState({})
+  const [loading, setLoading] = useState(true)
 
-  const addWeight = () => {
-    setWeights([{ text, key: Math.random() }, ...weights])
-    setText('')
-  }
-  console.log(weights)
+  useEffect(() => {
+    fetchWeights()
+
+    return () => {}
+  }, [])
+
+  // const addWeight = () => {
+  //   setWeights([{ text, key: Math.random() }, ...weights])
+  //   setText('')
+  // }
+  // console.log(weights)
 
   const isActive = () => /^[+-]?(\d+\.?\d*|\.\d+)$/.test(text)
+
+  // const fetchHello = async () => {
+  //   try {
+  //     const { data } = await axios.get('http://localhost:3000/hello')
+
+  //     setHello(data)
+  //   } catch (error) {
+  //     console.log(error)
+  //   } finally {
+  //     setLoading(false)
+  //   }
+  // }
+  const fetchWeights = async () => {
+    try {
+      const { data } = await axios.get(`${url}/weights`)
+      console.log(data)
+      setWeights(data.weights)
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  const addWeight = async () => {
+    setLoading(true)
+    try {
+      const { data } = await axios.post(`${url}/weights`, {
+        text
+      })
+
+      if (data.weight) {
+        // fetchWeights()
+        setWeights([data.weight, ...weights])
+      }
+      setText('')
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const deleteWeight = async key => {
+    setLoading(true)
+    try {
+      const { data } = await axios.delete(`${url}/weights/${key}`)
+      if (data.weight) {
+        setWeights(weights.filter(item => data.weight.key !== item.key))
+      }
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    )
+  }
+
   return (
     <View
       style={{
@@ -37,6 +113,7 @@ const App = () => {
       }}
       contentContainerStyle={{ flexGrow: 1 }}
     >
+      <Text>{hello.hello}</Text>
       {!isActive() && !!text && (
         <Text
           style={{
@@ -142,7 +219,12 @@ const App = () => {
                 }}
                 onPress={() => {}}
               >
-                <Text>Изменить</Text>
+                <Icon name="edit" size={25} color="white" />
+                <Text
+                  style={{ color: 'white', marginBottom: -10, marginTop: 2 }}
+                >
+                  Изменить
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{
@@ -158,7 +240,7 @@ const App = () => {
                   borderBottomRightRadius: 5
                 }}
                 onPress={() => {
-                  setWeights(weights.filter(item => data.item.key !== item.key))
+                  deleteWeight(data.item.key)
                 }}
               >
                 <Icon name="trash" size={25} color="white" />
