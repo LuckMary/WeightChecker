@@ -19,20 +19,44 @@ import {
 import { SwipeListView } from 'react-native-swipe-list-view'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import axios from 'axios'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const url = 'https://weight-checker-maria.herokuapp.com'
+// const url = 'http://localhost:3000'
 
 const App = () => {
   const [text, setText] = useState('')
   const [weights, setWeights] = useState([])
   const [hello, setHello] = useState({})
   const [loading, setLoading] = useState(true)
+  const [userId, setUserId] = useState(null)
 
   useEffect(() => {
-    fetchWeights()
+    getUserId()
 
     return () => {}
   }, [])
+
+  useEffect(() => {
+    if (userId) {
+      fetchWeights()
+    }
+  }, [userId])
+
+  const getUserId = async () => {
+    try {
+      let uId = await AsyncStorage.getItem('userId')
+
+      if (uId === null) {
+        uId = Math.random().toString()
+        await AsyncStorage.setItem('userId', uId)
+      }
+
+      setUserId(uId)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   // const addWeight = () => {
   //   setWeights([{ text, key: Math.random() }, ...weights])
@@ -55,7 +79,7 @@ const App = () => {
   // }
   const fetchWeights = async () => {
     try {
-      const { data } = await axios.get(`${url}/weights`)
+      const { data } = await axios.get(`${url}/weights?userId=${userId}`)
       console.log(data)
       setWeights(data.weights)
     } catch (error) {
@@ -67,7 +91,7 @@ const App = () => {
   const addWeight = async () => {
     setLoading(true)
     try {
-      const { data } = await axios.post(`${url}/weights`, {
+      const { data } = await axios.post(`${url}/weights?userId=${userId}`, {
         text
       })
 
@@ -86,7 +110,9 @@ const App = () => {
   const deleteWeight = async key => {
     setLoading(true)
     try {
-      const { data } = await axios.delete(`${url}/weights/${key}`)
+      const { data } = await axios.delete(
+        `${url}/weights/${key}?userId=${userId}`
+      )
       if (data.weight) {
         setWeights(weights.filter(item => data.weight.key !== item.key))
       }
