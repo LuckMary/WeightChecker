@@ -20,6 +20,9 @@ import { SwipeListView } from 'react-native-swipe-list-view'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import moment from 'moment'
+import CalendarStrip from 'react-native-calendar-strip'
+import LinearGradient from 'react-native-linear-gradient'
 
 const url = 'https://weight-checker-maria.herokuapp.com'
 // const url = 'http://localhost:3000'
@@ -33,7 +36,6 @@ const App = () => {
 
   useEffect(() => {
     getUserId()
-
     return () => {}
   }, [])
 
@@ -130,166 +132,224 @@ const App = () => {
       </View>
     )
   }
+  const datesWhitelist = [
+    // single date (today)
+    moment(),
+
+    // date range
+    {
+      start: moment().add(-365, 'days'),
+      end: moment()
+    }
+  ]
 
   return (
-    <View
+    <LinearGradient
+      colors={['#FBEEE7', 'white', '#FFA16F']}
       style={{
-        paddingHorizontal: 16,
-        paddingTop: Platform.OS === 'ios' ? 50 : 20
+        flex: 1
       }}
-      contentContainerStyle={{ flexGrow: 1 }}
     >
-      <Text>{hello.hello}</Text>
-      {!isActive() && !!text && (
-        <Text
-          style={{
-            color: 'red',
-            paddingHorizontal: 16,
-            fontSize: 12
-          }}
-        >
-          Введите число!
-        </Text>
-      )}
       <View
         style={{
-          alignItems: 'center',
-
-          flexDirection: 'row'
+          paddingHorizontal: 16,
+          paddingTop: Platform.OS === 'ios' ? 50 : 20
         }}
+        contentContainerStyle={{ flexGrow: 1 }}
       >
-        <TextInput
-          placeholder="Отметьте свой вес"
+        <CalendarStrip
+          datesWhitelist={datesWhitelist}
+          scrollable
+          scrollerPaging
+          selectedDate={moment()}
+          rightSelector={[]}
+          leftSelector={[]}
           style={{
-            borderWidth: 1,
-            borderColor: isActive() ? 'black' : 'gray',
-            height: 40,
-            paddingHorizontal: 10,
-            flex: 1,
-            marginRight: 5,
-            borderRadius: 5,
-            fontSize: 14
+            height: 120,
+            marginBottom: -25
           }}
-          onChangeText={t => setText(t.replace(',', '.').trim())}
-          value={text}
-          keyboardType={'decimal-pad'}
-          maxLength={5}
+          calendarHeaderStyle={{ fontSize: 20 }}
+          dateNumberStyle={{ fontSize: 18 }}
+          dateNameStyle={{
+            fontSize: 10,
+            marginBottom: Platform.OS === 'ios' ? -2 : -5
+          }}
+          disabledDateNameStyle={{
+            color: 'grey',
+            fontSize: 10,
+            marginBottom: Platform.OS === 'ios' ? -2 : -5
+          }}
+          disabledDateNumberStyle={{ color: 'grey', fontSize: 18 }}
+          highlightDateNameStyle={{
+            color: 'white',
+            fontSize: 10,
+            marginBottom: Platform.OS === 'ios' ? -2 : -5
+          }}
+          highlightDateNumberStyle={{ color: 'white', fontSize: 18 }}
+          highlightDateContainerStyle={{ backgroundColor: '#FC732D' }}
+          dayContainerStyle={{
+            borderColor: 'black',
+            borderRadius: 50,
+            backgroundColor: '#FEE4D6',
+
+            borderWidth: 0 // поставить тернарку, обвести в круг сегодняшнюю дату
+          }}
         />
-        <TouchableOpacity
-          onPress={() => {
-            if (isActive()) {
-              addWeight()
-            } else {
-              Alert.alert('Введите число!')
-            }
-          }}
-          activeOpacity={isActive() ? 0.5 : 1}
+        <Text>{hello.hello}</Text>
+        {!isActive() && !!text && (
+          <Text
+            style={{
+              color: 'red',
+              paddingHorizontal: 16,
+              fontSize: 12
+            }}
+          >
+            Введите число!
+          </Text>
+        )}
+        <View
           style={{
-            borderColor: isActive() ? '#344BA3' : 'gray',
-            borderWidth: 1,
-            height: 40,
             alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: isActive() ? '#344BA3' : 'lightgray',
-            width: 40,
-            borderRadius: 5
+
+            flexDirection: 'row'
           }}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>OK</Text>
-        </TouchableOpacity>
-      </View>
-      <View>
-        <SwipeListView
-          data={weights}
-          renderItem={data => (
-            <View
-              style={{
-                borderColor: 'skyblue',
-                borderWidth: 1,
-                height: 80,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#b3edfb',
-                borderRadius: 5,
-                marginTop: 5
-              }}
-            >
-              <Text style={{ fontSize: 28 }}>Ваш вес {data.item.text} кг!</Text>
-            </View>
-          )}
-          renderHiddenItem={(data, rowMap) => (
-            <View
-              style={{
-                alignItems: 'center',
+          <TextInput
+            placeholder="Отметьте свой вес ✓"
+            style={{
+              borderWidth: 1,
+              borderColor: isActive() ? '#059993' : 'gray',
+              height: 50,
+              paddingHorizontal: 10,
+              flex: 1,
+              marginRight: 5,
+              borderRadius: 5,
+              fontSize: 16,
+              backgroundColor: 'white'
+            }}
+            onChangeText={t => setText(t.replace(',', '.').trim())}
+            value={text}
+            keyboardType={'decimal-pad'}
+            maxLength={5}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              if (isActive()) {
+                addWeight()
+              } else {
+                Alert.alert('Введите число!')
+              }
+            }}
+            activeOpacity={isActive() ? 0.5 : 1}
+            style={{
+              borderColor: isActive() ? '#059993' : 'gray',
+              borderWidth: 1,
+              height: 50,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: isActive() ? '#059993' : 'lightgrey',
+              width: 50,
+              borderRadius: 5
+            }}
+          >
+            <Text style={{ color: 'white', fontWeight: 'bold' }}>OK</Text>
+          </TouchableOpacity>
+        </View>
+        <View>
+          <SwipeListView
+            data={weights}
+            renderItem={data => (
+              <LinearGradient
+                colors={['white', '#FBEEE7']}
+                style={{
+                  borderColor: '#FC732D',
+                  borderWidth: 0.5,
+                  height: 80,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#b3edfb',
+                  borderRadius: 5,
+                  marginTop: 10
+                }}
+              >
+                <Text style={{ fontSize: 28 }}>
+                  Ваш вес {data.item.text} кг!
+                </Text>
+              </LinearGradient>
+            )}
+            renderHiddenItem={(data, rowMap) => (
+              <View
+                style={{
+                  alignItems: 'center',
 
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                paddingLeft: 15,
-                marginTop: 5,
-                backgroundColor: '#00e782',
-                borderRadius: 5
-              }}
-            >
-              {/* <Text>Left</Text> */}
-              <TouchableOpacity
-                style={{
-                  alignItems: 'center',
-                  bottom: 0,
-                  justifyContent: 'center',
-                  position: 'absolute',
-                  top: 0,
-                  width: 75,
+                  flex: 1,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingLeft: 15,
+                  marginTop: 10,
                   backgroundColor: '#00e782',
-                  right: 75
-                }}
-                onPress={() => {}}
-              >
-                <Icon name="edit" size={25} color="white" />
-                <Text
-                  style={{ color: 'white', marginBottom: -10, marginTop: 2 }}
-                >
-                  Изменить
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  alignItems: 'center',
-                  bottom: 0,
-                  justifyContent: 'center',
-                  position: 'absolute',
-                  top: 0,
-                  width: 75,
-                  backgroundColor: '#ee2502',
-                  right: 0,
-                  borderTopRightRadius: 5,
-                  borderBottomRightRadius: 5
-                }}
-                onPress={() => {
-                  deleteWeight(data.item.key)
+                  borderRadius: 5
                 }}
               >
-                <Icon name="trash" size={25} color="white" />
-                <Text
-                  style={{ color: 'white', marginBottom: -10, marginTop: 2 }}
+                {/* <Text>Left</Text> */}
+                <TouchableOpacity
+                  style={{
+                    alignItems: 'center',
+                    bottom: 0,
+                    justifyContent: 'center',
+                    position: 'absolute',
+                    top: 0,
+                    width: 75,
+                    backgroundColor: '#00e782',
+                    right: 75
+                  }}
+                  onPress={() => {}}
                 >
-                  Удалить
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          disableRightSwipe
-          leftOpenValue={0}
-          rightOpenValue={-150}
-          previewRowKey={'0'}
-          previewOpenValue={-40}
-          previewOpenDelay={3000}
-          onRowDidOpen={rowKey => {
-            console.log('This row opened', rowKey)
-          }}
-        />
-      </View>
-      {/* <View>
+                  <Icon name="edit" size={25} color="white" />
+                  <Text
+                    style={{ color: 'white', marginBottom: -10, marginTop: 2 }}
+                  >
+                    Изменить
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    alignItems: 'center',
+                    bottom: 0,
+                    justifyContent: 'center',
+                    position: 'absolute',
+                    top: 0,
+                    width: 75,
+                    backgroundColor: '#ee2502',
+                    right: 0,
+                    borderTopRightRadius: 5,
+                    borderBottomRightRadius: 5
+                  }}
+                  onPress={() => {
+                    deleteWeight(data.item.key)
+                  }}
+                >
+                  <Icon name="trash" size={25} color="white" />
+                  <Text
+                    style={{ color: 'white', marginBottom: -10, marginTop: 2 }}
+                  >
+                    Удалить
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            disableRightSwipe
+            leftOpenValue={0}
+            rightOpenValue={-150}
+            previewRowKey={'0'}
+            previewOpenValue={-40}
+            previewOpenDelay={3000}
+            onRowDidOpen={rowKey => {
+              console.log('This row opened', rowKey)
+            }}
+          />
+        </View>
+        {/* <View>
         {weights.map(w => (
           <View
             key={w.id}
@@ -308,7 +368,8 @@ const App = () => {
           </View>
         ))}
       </View> */}
-    </View>
+      </View>
+    </LinearGradient>
   )
 }
 
